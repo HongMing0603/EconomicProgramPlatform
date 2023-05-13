@@ -1,0 +1,195 @@
+<!-- 此網頁為父模板包含了 navigation bar功能 -->
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>錢老爺經濟項目平台</title>
+    <style>
+        /* CSS styling for navigation bar */
+        nav {
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav li {
+            margin-right: 20px;
+        }
+
+        nav li:last-child {
+            margin-right: 0;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+        }
+
+        nav a:hover {
+            background-color: #555;
+        }
+
+        .logo {
+            width: auto;
+            height: auto;
+            float: right;
+            max-height: 60px;
+            object-fit: contain;
+        }
+
+        .member-info {
+            display: flex;
+            align-items: center;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .member-info img {
+            margin-right: 10px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+        }
+
+        .favorites {
+            cursor: pointer;
+            /* 添加样式以指示可以点击 */
+            text-decoration: underline;
+            color: yellow;
+        }
+
+        .favorites:hover {
+            text-decoration: underline;
+        }
+
+        /* footer 樣式 */
+
+        .footer {
+            border-top: 2px solid gray;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #f9f9f9;
+            padding: 5px;
+            text-align: center;
+            z-index: 9999;
+            /* 确保版权信息显示在最顶层 */
+        }
+
+        /* 下拉式選單 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropbtn {
+            background-color: #e7da8b;
+            color: #333;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 10px; /* 新增的圓角屬性 */
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation bar -->
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('predict') }}">Predict</a></li>
+        </ul>
+        <!-- Logo -->
+        <img class="logo" src="https://drive.google.com/thumbnail?id=1W0AyVf83vE1191xHjaUJaCabQBYBPFhx
+		">
+        <!-- 獲取username 為了給JavaScript -->
+        <div id="username" data-username="{{session['name']}}"></div>
+
+        <div class="member-info">
+            <img id="avatar" alt="Avatar">
+
+            <div class="dropdown">
+                <button class="dropbtn">Welcome {{username}}</button>
+                <div class="dropdown-content">
+                    <a href="#">個人訊息</a>
+                    <a href="/logout">登出</a>
+                </div>
+            </div>
+
+        </div>
+        <div class="favorites" onclick="goToFavorites()">Favorites</div>
+    </nav>
+    <!-- goto favorite page function -->
+    <script>
+        function goToFavorites() {
+            // 在此处更改为你希望跳转的页面的URL
+            var favoritesURL = '/favorites';
+            window.location.href = favoritesURL;
+        }
+    </script>
+
+    <!-- 其他內容位置 -->
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- 版權聲明 -->
+    <footer class="footer">
+        <p>版權所有 © 2023 Coin Daddy. 免責聲明：本平台預測結果僅供參考，作者不承擔任何責任。</p>
+    </footer>
+
+
+</body>
+
+</html>

@@ -1,0 +1,87 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <title>關於我們</title>
+    <style>
+        .video-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+
+
+        /* Optional styling for the video container */
+        .video-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+
+        .disclaimer {
+            /* margin-top: 300px; */
+            margin-bottom: 300px;
+            font-size: 12px;
+            color: gray;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% extends 'base.html'%}
+    {% block content %}
+
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="https://www.youtube.com/embed/Mn_ib9jtnTs"
+                        allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Import avatar generate javascript -->
+    <script>
+        // generate Avatar
+        function generateAvatar(text, foregroundColor, backgroundColor) {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
+
+
+            canvas.width = 200;
+            canvas.height = 200;
+
+            // Draw background
+            context.fillStyle = backgroundColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw text
+            context.font = "bold 100px Assistant";
+            context.fillStyle = foregroundColor;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            return canvas.toDataURL("image/png");
+        }
+
+        // 獲取username的字串
+        const username = document.getElementById("username").getAttribute("data-username");
+        document.getElementById("avatar").src = generateAvatar(username[0], "white", "#009578");
+    </script>
+
+
+    {% endblock %}
+</body>
+
+</html>

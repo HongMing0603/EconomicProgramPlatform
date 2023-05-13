@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Economic Forecasting</title>
+	<!-- 引入 Bootstrap CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
+	<!-- 引入 Chart.js -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+	<style>
+		body {
+			background-color: #f8f9fa;
+		}
+
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 20px;
+			background-color: #fff;
+			border-radius: 5px;
+			box-shadow: 0px 0px 10px #ccc;
+		}
+
+		h1 {
+			font-size: 2rem;
+			margin-bottom: 30px;
+			text-align: center;
+		}
+
+		label {
+			font-weight: 500;
+		}
+
+		.form-control {
+			border-radius: 0;
+			box-shadow: none;
+		}
+
+		.form-control option {
+			text-align: center;
+		}
+
+		button[type="button"] {
+			background-color: #007bff;
+			border-color: #007bff;
+			border-radius: 3px;
+			font-size: 1.2rem;
+			font-weight: 500;
+			margin-top: 30px;
+			padding: 10px 20px;
+			display: block;
+			margin: 0 auto;
+		}
+
+		#output {
+			margin-top: 30px;
+			text-align: center;
+		}
+
+		#myChart {
+			margin-top: 30px;
+			max-width: 100%;
+			height: auto;
+			display: none;
+			/* 預設隱藏圖表 */
+		}
+
+		/* 修改背景設計 */
+		body::after {
+			image-rendering: -webkit-optimize-contrast;
+			content: "";
+			display: block;
+			position: fixed;
+			background-color: #f5f5f5;
+			background-image: linear-gradient(45deg, #eeeeeed6 25%, transparent 25%, transparent 75%, #eeeeeed6 75%, #eee),
+				linear-gradient(45deg, #eeeeeed6 25%, transparent 25%, transparent 75%, #eeeeeed6 75%, #eee);
+			/* background-position: 0 0, 10px 10px; */
+			background-size: 100% auto;
+		}
+
+		
+	</style>
+	<!-- Import Navigation bar's css -->
+	<!-- url_for 導向flask的def函數 -->
+	<!-- <link rel="stylesheet" type="text/css" href="{{ url_for('serve_css', file='navigation.css') }}"> -->
+</head>
+
+<body>
+	<!-- Navigation bar -->
+	<!-- import Navigation bar from base.html -->
+	{% extends 'base.html'%}
+
+	{% block content %}
+	<!-- Import avatar generate javascript -->
+	<script>
+		// generate Avatar
+		function generateAvatar(text, foregroundColor, backgroundColor) {
+			const canvas = document.createElement("canvas");
+			const context = canvas.getContext("2d");
+
+
+			canvas.width = 200;
+			canvas.height = 200;
+
+			// Draw background
+			context.fillStyle = backgroundColor;
+			context.fillRect(0, 0, canvas.width, canvas.height);
+
+			// Draw text
+			context.font = "bold 100px Assistant";
+			context.fillStyle = foregroundColor;
+			context.textAlign = "center";
+			context.textBaseline = "middle";
+			context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+			return canvas.toDataURL("image/png");
+		}
+    
+		// 獲取username的字串
+		const username = document.getElementById("username").getAttribute("data-username");
+		document.getElementById("avatar").src = generateAvatar(username[0], "white", "#009578");
+	</script>
+
+	<!-- <script src="{{ url_for('serve_scripts', filename='avatar.js') }}"></script> -->
+
+
+
+	<div class="container mt-5">
+		<h1>Economic Forecasting</h1>
+		<form>
+			<div class="form-group">
+				<label for="model">Select a model:</label>
+				<select class="form-control" id="model">
+					<option value="BRR">Bayesian Ridge Regression</option>
+					<option value="PR">Polynomial Regression</option>
+					<option value="EN">Elastic Net</option>
+					<option value="RF">Random Forest Regression</option>
+					<option value="SVR">Support Vector Regression</option>
+				</select>
+			</div>
+			<button type="button" class="btn btn-primary d-block mx-auto" onclick="selectModel()">Forecast</button>
+		</form>
+		<div id="output"></div>
+		<!-- 用來顯示圖 -->
+		<canvas id="myChart" width="400" height="400"></canvas>
+
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
+	<script>
+
+		function selectModel() {
+			// getItem (model)
+			var selectBox = document.getElementById("model");
+			var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+			// 根據 使用者的選項來決定對應的python joblib檔案名稱(已經訓練好的模型)
+			if (selectedValue == "BRR") {
+				// alert("BRR");
+				var model_name = "BayesianRidgeRegression_GridSearch_gold--oil--bitcoin2bitcoin-data";
+			} else if (selectedValue == "PR") {
+				// alert("PR");
+				var model_name = "PolynomialRegression_GridSearch_gold--oil--bitcoin2bitcoin-data";
+
+			} else if (selectedValue == "EN") {
+				// alert("EN");
+				var model_name = "ElasticNet_GridSearch_gold--oil--bitcoin2bitcoin-data";
+			}
+
+			// create a new XMLHttpRequest object
+			var xhr = new XMLHttpRequest();
+			// create a predict url
+			var url = "/predict/" + selectedValue + "?model_name=" + model_name;
+			// configure the POST request to the /predict route of your Flask app
+			xhr.open("GET", url);
+
+			// set the request header to send the data as a form
+			xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+			// set the response type to JSON
+			xhr.responseType = 'json';
+
+			// define the function to handle the response from the server
+			xhr.onload = function () {
+				if (xhr.status === 200) {
+					// alert("Choose successful");
+					// var result = xhr.response; // 取得預測結果
+					// 解析json
+					// response 裡面有 y_test與 y_pred
+					response = xhr.response; // 将响应存储到 y_test_json 变量中
+					var y_test_json = response.y_test_json;
+					var y_pred_json = response.y_pred_json;
+
+					var y_test_obj = JSON.parse(y_test_json);
+					var y_pred_obj = JSON.parse(y_pred_json);
+					// 成功接收
+					console.log(y_test_obj)
+					console.log(y_pred_obj)
+
+					// create an array to hold the data for the chart
+					var data = [];
+
+					// loop through the y_test object and add each value to the data array
+					// 把column index 與data都獨立出來了
+					// for (var key in y_test_obj) {
+					// 	if (y_test_obj.hasOwnProperty(key)) {
+					// 		data.push({ x: new Date(y_test_obj[key][1]), y: y_test_obj[key][2] });
+
+					// 	}
+					// }
+					// console.log(data)
+					// data[0] ->項目
+					// data[1] ->日期
+					// data[2] ->價格
+
+					// 獲取id 為myChart的物件
+					// get the canvas element from the HTML file
+					// create a new chart
+
+					// 將JSON數據轉換為Chart.js數據格式
+					const chartData = {
+						labels: y_test_obj.index,
+						datasets: [{
+							label: 'Bitcoin Price',
+							// 價格資料價格在y_test_obj['data']當中
+							data: y_test_obj.data.map(item => item[0]),
+							borderColor: 'rgba(255, 99, 132, 1)',
+							backgroundColor: 'rgba(255, 99, 132, 0.2)',
+							borderWidth: 1
+						},
+						{
+							label: 'Predicted Bitcoin Price',
+							data: y_pred_obj.data.map(item => item[0]),
+							borderColor: 'rgba(54, 162, 235, 1)',
+							backgroundColor: 'rgba(54, 162, 235, 0.2)',
+							borderWidth: 1
+						}
+						]
+					};
+
+
+
+					// 繪製趨勢圖
+					const ctx = document.getElementById('myChart').getContext('2d');
+					const myChart = new Chart(ctx, {
+						type: 'line',
+						data: chartData,
+						options: {
+							scales: {
+								yAxes: [{
+									ticks: {
+										beginAtZero: false,
+										suggestedMin: 15000,    // 設定建議最小值
+
+									}
+								}]
+							}
+						}
+					});
+
+
+
+					// var y_pred = result['y_pred']; // 取得預測結果中的y_pred
+					// var y_test = result['y_test']; // 取得預測結果中的y_test
+				} else {
+					// handle error
+					alert("Error: " + xhr.statusText);
+				}
+			};
+
+			// respond the model name
+			// 記得要加上等號
+			xhr.send();
+		}
+
+
+
+	</script>
+	{% endblock %}
+
+
+</body>
+
+</html>
