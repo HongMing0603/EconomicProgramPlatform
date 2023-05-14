@@ -7,6 +7,7 @@ import pandas as pd
 import sys
 import numpy as np
 from sklearn.model_selection import train_test_split
+import re
 
 # 導入標準及反標準化Package
 sys.path.append('C:\\Users\\user\\OneDrive\\Desktop\\Course\\Seminar\\code\\Data_Normalization_split')
@@ -116,8 +117,8 @@ def predict():
     username = session.get("name")
     return render_template('Predict.html', username = username)
 
-@app.route('/predict/BRR', methods=["GET"])
-def predict_BRR():
+# @app.route('/predict/BRR', methods=["GET"])
+# def predict_BRR():
     # model_name = request.form.get("model_name")
     model_name = request.args.get('model_name')
     print (f"The selected model is: {model_name}")
@@ -189,8 +190,8 @@ def predict_BRR():
 #     return render_template('test.html', y_test_json = y_test_json) 
     
 
-@app.route('/predict/PR', methods=["GET"])
-def predict_PR():
+# @app.route('/predict/PR', methods=["GET"])
+# def predict_PR():
     
     model_name = request.args.get('model_name')
     print (f"The selected model is: {model_name}")
@@ -243,8 +244,8 @@ def predict_PR():
 
     return  jsonify(y_test_json = y_test_json,y_pred_json = y_pred_json)
 
-@app.route('/predict/EN', methods=["GET"])
-def predict_EN():
+# @app.route('/predict/EN', methods=["GET"])
+# def predict_EN():
     model_name = request.args.get('model_name')
     print (f"The selected model is: {model_name}")
     # 模型位置
@@ -297,6 +298,81 @@ def predict_EN():
     # return redirect(url_for('predictions_results', y_test_json = y_test_json))
 
     return  jsonify(y_test_json = y_test_json,y_pred_json = y_pred_json)
+
+# 預測項目及模型傳入
+@app.route('/predict/<model>/<economic_variable>', methods=["GET"])
+def predict_model_variable(model, economic_variable):
+    print(model, economic_variable)
+
+    # 讀取模型:
+    model_location = f"code/Data/GridSearchModel/{model}_{economic_variable}"
+    modelfile = joblib.load(model_location)
+    print(modelfile)
+
+    # 讀取數據
+    data = pd.read_csv('code/Data/fillna/Combine/fillna_Combine.csv', index_col="Date")
+
+    # 使用正則表達式取出經濟項目名稱
+    string = economic_variable
+    pattern = r"All2(.*)"
+
+    match = re.search(pattern, string)
+
+    if match:
+        economic_variable = match.group(1)
+    else:
+        print("No match found.")
+    cols = list(data.columns)
+    cols.append(cols.pop(cols.index(f'{economic_variable}')))
+    # data用以上index進行排序
+    data = data.reindex(columns = cols)
+
+    # 判斷是否有High 與 Low 如果有的話就丟棄(無效預測)
+    
+    economic_name = economic_variable.split('_')[0]
+    drop_columns = [f"{economic_name}_High", f"{economic_name}_Low"]
+    for drop_column in drop_columns:
+        try:
+            data = data.drop(drop_column, axis=1)
+        except:
+            pass
+    X = data.iloc[:, :-1]
+    y = data.iloc[:,-1:]
+    # 分割資料集
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
+
+    # Normalization Dataset
+    X_train_scalered = Normalization_afterSplit("X_scaler", X_train, "train")
+    X_test_scalered = Normalization_afterSplit("X_scaler", X_test, "test")
+    y_train_scalered = Normalization_afterSplit("y_scaler", y_train, "train")
+
+    # Convert the scaled data into dataframes
+    X_train_df = pd.DataFrame(X_train_scalered, columns=X_train.columns, index=X_train.index)
+    X_test_df = pd.DataFrame(X_test_scalered, columns=X_test.columns, index=X_test.index)
+    y_train_df = pd.DataFrame(y_train_scalered, columns=y_train.columns, index=y_train.index)
+    y_test_df = pd.DataFrame(y_test, columns=y_test.columns, index=y_test.index)
+
+    y_pred = modelfile.predict(X_test_df)
+    # 調整維度
+    y_pred = np.reshape(y_pred, (-1,1))
+
+    # 取得y_test的列名 方便y_pred的列取名
+    y_test_col_name = y_test.columns.tolist()[0]
+    # 預測完後要反正規化才能與y_test比較
+    y_pred = Denormalize(y_pred)
+    y_pred_df = pd.DataFrame(y_pred, columns=[f"{y_test_col_name}-Pred"], index=y_test.index)
+
+
+    # 把y_pred變成json檔
+    y_pred_json = y_pred_df.to_json(orient="split")
+
+    # 把y_test變成json檔
+    y_test_json = y_test_df.to_json(orient='split',)
+    # 傳給chart.html
+    # return redirect(url_for('predictions_results', y_test_json = y_test_json))
+
+    return  jsonify(y_test_json = y_test_json,y_pred_json = y_pred_json)
+
 
 # Home page
 @app.route('/home')

@@ -79,8 +79,6 @@
 			/* background-position: 0 0, 10px 10px; */
 			background-size: 100% auto;
 		}
-
-		
 	</style>
 	<!-- Import Navigation bar's css -->
 	<!-- url_for 導向flask的def函數 -->
@@ -117,7 +115,7 @@
 
 			return canvas.toDataURL("image/png");
 		}
-    
+
 		// 獲取username的字串
 		const username = document.getElementById("username").getAttribute("data-username");
 		document.getElementById("avatar").src = generateAvatar(username[0], "white", "#009578");
@@ -130,6 +128,18 @@
 	<div class="container mt-5">
 		<h1>Economic Forecasting</h1>
 		<form>
+			<!-- 選擇預測變量 -->
+			<div class="form-group">
+				<label for="variable">選擇要預測的項目:</label>
+				<select class="form-control" id="variable">
+					<option value="Bitcoin">Bitcoin</option>
+					<option value="WTI">WTI</option>
+					<option value="BRENT">BRENT</option>
+					<option value="DUBAI">DUBAI</option>
+					<option value="Gold">Gold</option>
+				</select>
+			</div>
+
 			<div class="form-group">
 				<label for="model">Select a model:</label>
 				<select class="form-control" id="model">
@@ -157,23 +167,54 @@
 			// getItem (model)
 			var selectBox = document.getElementById("model");
 			var selectedValue = selectBox.options[selectBox.selectedIndex].value;
-			// 根據 使用者的選項來決定對應的python joblib檔案名稱(已經訓練好的模型)
-			if (selectedValue == "BRR") {
-				// alert("BRR");
-				var model_name = "BayesianRidgeRegression_GridSearch_gold--oil--bitcoin2bitcoin-data";
-			} else if (selectedValue == "PR") {
-				// alert("PR");
-				var model_name = "PolynomialRegression_GridSearch_gold--oil--bitcoin2bitcoin-data";
+			// 設置模型mapping
+			model_mapping = {
+				BRR:'BayesianRidgeRegression_GridSearch',
+				PR:'PolynomialRegression_GridSearch',
+				EN:'ElasticNet_GridSearch',
+				RF:'RandomForestRegression_GridSearch',
+				SVR:'SupportVectorRegression_GridSearch',
+			}
 
-			} else if (selectedValue == "EN") {
-				// alert("EN");
-				var model_name = "ElasticNet_GridSearch_gold--oil--bitcoin2bitcoin-data";
+			// 根據 使用者的選項來決定對應的python joblib檔案名稱(已經訓練好的模型)
+			// 根據模型名稱及預測項目來選擇模型
+			if (selectedValue in model_mapping){
+				model_name = model_mapping[selectedValue];
+			}
+			else{
+				console.log("The model doesn't exist!");
 			}
 
 			// create a new XMLHttpRequest object
 			var xhr = new XMLHttpRequest();
 			// create a predict url
-			var url = "/predict/" + selectedValue + "?model_name=" + model_name;
+			// var url = "/predict/" + selectedValue + "?model_name=" + model_name;
+
+			var selectBox = document.getElementById("variable");
+			var selectedVariable = selectBox.options[selectBox.selectedIndex].value;
+			// 紀錄經濟變量名稱
+			EconomicProject = selectedVariable;
+			// Create a mapping object
+			const variableMapping = {
+				Bitcoin: "All2bitcoin-data_Price",
+				WTI: "All2wti-daily_Price",
+				BRENT: "All2brent-daily_Price",
+				DUBAI: "All2dubai-daily_Price",
+				Gold: "All2Gold-Price_Price"
+			};
+
+			// Check if the selected variable exists in the mapping
+			if (selectedVariable in variableMapping) {
+				// Update the selected variable with the corresponding model prediction variable
+				selectedVariable = variableMapping[selectedVariable];
+			} else {
+				// Handle the case when the selected variable is not found in the mapping
+				console.log("Selected variable is not valid.");
+			}
+
+			// 傳送使用模型及選擇的經濟項目
+			var url = "/predict/" + model_name + "/" + selectedVariable;
+
 			// configure the POST request to the /predict route of your Flask app
 			xhr.open("GET", url);
 
@@ -224,7 +265,7 @@
 					const chartData = {
 						labels: y_test_obj.index,
 						datasets: [{
-							label: 'Bitcoin Price',
+							label: `${EconomicProject} Price`,
 							// 價格資料價格在y_test_obj['data']當中
 							data: y_test_obj.data.map(item => item[0]),
 							borderColor: 'rgba(255, 99, 132, 1)',
@@ -232,7 +273,7 @@
 							borderWidth: 1
 						},
 						{
-							label: 'Predicted Bitcoin Price',
+							label: `Predicted ${EconomicProject} Price`,
 							data: y_pred_obj.data.map(item => item[0]),
 							borderColor: 'rgba(54, 162, 235, 1)',
 							backgroundColor: 'rgba(54, 162, 235, 0.2)',
