@@ -57,6 +57,9 @@ def register():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
+
+        # Save as session
+        session['email'] = email
         # Add the user to the database or perform other actions here
         cursor.execute('INSERT INTO users (name, email, password) VALUES (%s, %s, %s)',
                        (name, email, password))
@@ -104,6 +107,12 @@ def logout():
     # 導向到login
     return redirect(url_for('login'))
 
+# 個人信息頁面
+@app.route('/personalPage')
+def personalPage():
+    # Passing email address
+    # email = session['email']
+    return render_template('personalPage.html')
 
 
 
