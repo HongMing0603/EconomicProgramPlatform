@@ -23,5 +23,51 @@
 
 ![picture 6](images/83d9aaede4f89a1d67ea5aba11e3b638fa037b2bef7b9bafde3d7e436a0ce49e.png)  
 
+# 使用教學
+## 配置環境
+Anaconda官方教學:
+> https://www.anaconda.com/blog/moving-conda-environments
+
+Cd至(根目錄)於Terminal當中輸入
+
+```conda env create -f environment.yml```
+
+即可安裝環境
+
+本專案使用**VScode**製作
+
+於VScode切換到對應環境
+![picture 8](images/e70f28a60c691383f1ce8c1fb3c306f4b7f9a59d99e0da293c033faf0f628bd1.png)  
+
+## 安裝Xampp
+
+#### Xampp configuration:
+![picture 9](images/943526b8d9c44aa85b36011f5c5d33e44c20ebb121fed4a8f1d29064dc72bc5c.png)  
+> 修改自相同的port
+
+### import sql file
+From Xampp control panel
+![picture 10](images/53a87084028b6e7d3b8ea4f83195d9a751ec9b77db2a77ef69da0ba1a33a71c3.png)  
+可以進入到phpMyadmin介面
+
+按下匯入
+![picture 11](images/d5479fbad10f57602189483305fbc6f53bcd1dc73f5c0dabc1c4ff103b98efec.png)  
+
+按下選擇檔案
+![picture 12](images/d9fb047f0ac2ebaefddd1670b571e9c29cd5e5f783d54e58cd8a7ce151066d83.png)  
+
+於本專案資料夾根目錄可看到sql檔案
+![picture 13](images/b37efed6da4a4ccb3401a4751d37cafb76e6c1dea41b3988ab860850168fe3e1.png)  
+
+點選127_0_0_1.sql
+按開啟
+
+![picture 14](images/f846732a4c857c9716638e776ec2c879c5896dcc4db8901f459e0e23065fdf63.png)  
+
+將進度調移動到最下方可以看到匯入按鈕
+點擊它即可匯入資料
+
+### 運行app.py即可搭建預測平台
+
 
 
