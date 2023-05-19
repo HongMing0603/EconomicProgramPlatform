@@ -87,10 +87,15 @@ def login_post():
         # Store session
         session['name'] = username
 
+        # GET USER ID
+        session['user_id'] = result[0]
+        # print(session['user_id'])
+
         
         # Redirect to predict page
         # If you use code = 307 it will sent a post request for page
         # 傳username給html進行顯示
+        conn.close()
         return redirect(url_for('predict'), code=307,)
     else:
         # 傳回error變量給html
@@ -110,9 +115,32 @@ def logout():
 # 個人信息頁面
 @app.route('/personalPage')
 def personalPage():
+
+    # Connect to the database
+    conn = mysql.connector.connect(
+    host='localhost',
+    user='root',
+    password='',
+    database='login'
+)
+
     # Passing email address
     # email = session['email']
-    return render_template('personalPage.html')
+
+    # Accroding the session id find the user's email address
+    mycursor = conn.cursor()
+    mycursor.execute("SELECT email FROM users WHERE id = %s",(str(session['user_id']), ))
+
+    # Fetch the result
+    result = mycursor.fetchone()
+    if result:
+        session['email'] = result[0]
+        # print(session['email'])
+    else:
+        print("ID not find")
+        
+
+    return render_template('personalPage.html', email = session['email'])
 
 
 
