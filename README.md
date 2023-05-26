@@ -1,3 +1,7 @@
+##20230526 更新
+![image](https://github.com/HongMing0603/EconomicProgramPlatform/assets/82252646/8017c217-dc3d-49e0-8881-7ecef6cb62f6)
+
+
 ## 製作項目
 1. 個人資訊頁面
 2. 新增預測介面功能
