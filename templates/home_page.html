@@ -16,6 +16,7 @@
             height: 10vh;
             background-color: #f1f1f1;
         }
+
         body {
             background-image: url("background.jpg");
             background-repeat: no-repeat;
@@ -24,11 +25,13 @@
             color: #333;
             text-align: center;
         }
+
         .intro {
             margin-top: 50px;
             font-size: 20px;
             line-height: 1.5;
         }
+
         .features {
             margin-top: 50px;
             display: flex;
@@ -36,6 +39,7 @@
             align-items: center;
             flex-wrap: wrap;
         }
+
         .feature {
             width: 30%;
             margin: 20px;
@@ -44,14 +48,17 @@
             border-radius: 10px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
         }
+
         .feature h2 {
             font-size: 24px;
             margin-top: 0;
         }
+
         .feature p {
             font-size: 16px;
             line-height: 1.5;
         }
+
         .updates {
             margin-top: 50px;
             font-size: 18px;
@@ -60,11 +67,13 @@
             padding-left: 50px;
             border-left: 2px solid #ccc;
         }
+
         .contact {
             margin-top: 50px;
             font-size: 16px;
             line-height: 1.5;
         }
+
         .contact a {
             color: #0066cc;
         }
@@ -77,40 +86,40 @@
     <div id="username" data-username="{{session['name']}}"></div>
 
     <!-- Navigation bar -->
-	{% extends 'base.html'%}
+    {% extends 'base.html'%}
 
     {% block content %}
 
-	<!-- Import avatar generate javascript -->
-	<script>
-		// generate Avatar
-		function generateAvatar(text, foregroundColor, backgroundColor) {
-			const canvas = document.createElement("canvas");
-			const context = canvas.getContext("2d");
+    <!-- Import avatar generate javascript -->
+    <script>
+        // generate Avatar
+        function generateAvatar(text, foregroundColor, backgroundColor) {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("2d");
 
 
-			canvas.width = 200;
-			canvas.height = 200;
+            canvas.width = 200;
+            canvas.height = 200;
 
-			// Draw background
-			context.fillStyle = backgroundColor;
-			context.fillRect(0, 0, canvas.width, canvas.height);
+            // Draw background
+            context.fillStyle = backgroundColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
 
-			// Draw text
-			context.font = "bold 100px Assistant";
-			context.fillStyle = foregroundColor;
-			context.textAlign = "center";
-			context.textBaseline = "middle";
-			context.fillText(text, canvas.width / 2, canvas.height / 2);
+            // Draw text
+            context.font = "bold 100px Assistant";
+            context.fillStyle = foregroundColor;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
 
-			return canvas.toDataURL("image/png");
-		}
-    
-		// 獲取username的字串
-		const username = document.getElementById("username").getAttribute("data-username");
-		document.getElementById("avatar").src = generateAvatar(username[0], "white", "#009578");
-	</script>
-    
+            return canvas.toDataURL("image/png");
+        }
+
+        // 獲取username的字串
+        const username = document.getElementById("username").getAttribute("data-username");
+        document.getElementById("avatar").src = generateAvatar(username[0], "white", "#009578");
+    </script>
+
     <div class="container">
         <h1 class="text-center my-5 border-secondary border-3 bg-warning text-dark">錢老爺經濟項目平台</h1>
         <div class="intro">
@@ -132,10 +141,57 @@
                 <p class="text-center">本平台將提供金融項目回測功能，能夠讓使用者以另一種角度來探討金融項目之趨勢，以利於投資決策。(研發中)</p>
             </div>
         </div>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12 border-5 border-secondary bg-light m-sm-3 mx-auto">
+                    <h2 class="text-center">即時價格</h2>
+                    <table id="economic-table" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Value</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $.ajax({
+                    url: '/economic_prices',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data) {
+                        var tableBody = $('#economic-table tbody');
+
+                        $.each(data, function (name, item) {
+                            var row = $('<tr>');
+                            row.append($('<td>').text(name));
+                            row.append($('<td>').text(item.value));
+                            row.append($('<td>').text(item.timestamp));
+                            tableBody.append(row);
+                        });
+                    }
+                });
+            });
+        </script>
+
+
     </div>
+
+
+
+
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.0/js/bootstrap.bundle.min.js"></script>
-    
+
+
+
     {% endblock %}
 </body>
 

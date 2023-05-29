@@ -1,0 +1,1 @@
+goldApi_API_Key = 'goldapi-13twf7rqrlhyknnui-io'

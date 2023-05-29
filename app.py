@@ -8,6 +8,11 @@ import sys
 import numpy as np
 from sklearn.model_selection import train_test_split
 import re
+import requests
+import datetime
+
+from config import goldApi_API_Key
+
 
 # 導入標準及反標準化Package
 sys.path.append('C:\\Users\\user\\OneDrive\\Desktop\\Course\\Seminar\\code\\Data_Normalization_split')
@@ -16,7 +21,7 @@ from normalization import Denormalize
 from normalization import Normalization_afterSplit
 
 
-app = Flask(__name__, static_url_path='/static')
+app = Flask(__name__)
 app.secret_key = os.urandom(24)
 # 背景圖片位置
 app.static_folder = 'icon'
@@ -440,6 +445,66 @@ def serve_scripts(filename):
     # get user name
     username = session['name']
     return send_from_directory('static/javascript', filename)
+# Get on time price 
+@app.route('/onTimePrice', methods=['GET'])
+def get_on_time_price():
+    # Make a GET request to the CoinGecko API for Bitcoin data
+    response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Parse the JSON response
+        data = response.json()
+
+        # Get the Bitcoin price from the response
+        bitcoin_price = data.get('bitcoin', {}).get('usd')
+
+        # Return the Bitcoin price as a JSON response
+        return jsonify(price=bitcoin_price)
+    else:
+        # Return an error message as a JSON response
+        return jsonify(error='Failed to retrieve Bitcoin price')
+    
+def get_gold_price():
+    # result is one troy ounce approximately 31.1034768 g
+    url = 'https://www.goldapi.io/api/XAU/USD'
+    headers = {
+        'x-access-token': goldApi_API_Key  # Replace with your Gold-API API key
+    }
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        gold_price = data['price']
+        gold_timestamp = data['timestamp']
+        gold_datetime = datetime.datetime.utcfromtimestamp(gold_timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        return gold_price, gold_datetime
+    return None, None
+
+@app.route('/economic_prices')
+def economic_prices():
+    response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
+    bitcoin_data = response.json()
+    bitcoin_price = bitcoin_data['bitcoin']['usd']
+
+    bitcoin_info = requests.get('https://api.coindesk.com/v1/bpi/currentprice/BTC.json')
+    bitcoin_info_data = bitcoin_info.json()
+    bitcoin_timestamp = bitcoin_info_data['time']['updated']
+    gold_price, gold_timestamp = get_gold_price()
+    
+    print(gold_timestamp)
+
+    data = {
+        'Bitcoin': {
+            'value': bitcoin_price,
+            'timestamp': bitcoin_timestamp
+        },
+        'Gold': {
+            'value': gold_price,
+            'timestamp': gold_timestamp
+        },
+        # Add more data as needed
+    }
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5666)
